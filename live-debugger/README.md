@@ -6,30 +6,31 @@ A drop-in JavaScript debugging console that tracks user interactions in real-tim
 
 ---
 
-## Privacy & Data Handling
+## What This Is
 
-**This tool is 100% local by default.** Here's exactly where your data goes:
+**A JavaScript file for developers to add to their own web projects.**
 
-| Mode | Where Data Goes | Who Can See It |
-|------|-----------------|----------------|
-| **Default** | Browser memory only | Only you, in your browser tab |
-| `persistLogs: true` | Browser's localStorage | Only you, on your device |
-| `sendToServer: true` | Your own server endpoint | You control the server |
-
-**What this means:**
-- No external servers. No analytics. No tracking.
-- Logs exist only in the browser tab while it's open
-- Close the tab = logs are gone (unless you enable persistence)
-- Export creates a local JSON file on your computer
-- Server logging only works if YOU set up an endpoint
-
-**The code is ~500 lines of vanilla JavaScript. Read it yourself:** [debugger.js](./debugger.js)
+| It IS | It is NOT |
+|-------|-----------|
+| A .js file you add to your project | A browser extension |
+| For debugging your own web apps | For debugging other websites |
+| A development/testing tool | An end-user product |
 
 ---
 
-## Quick Start
+## How to Use It
 
-### 1. Add to your HTML
+### Step 1: Get the file
+
+```bash
+# Download directly
+curl -O https://raw.githubusercontent.com/kckassette/MemorySpaceFeatures/main/live-debugger/debugger.js
+
+# Or clone the repo
+git clone https://github.com/kckassette/MemorySpaceFeatures.git
+```
+
+### Step 2: Add to your HTML
 
 ```html
 <script src="debugger.js"></script>
@@ -38,9 +39,33 @@ A drop-in JavaScript debugging console that tracks user interactions in real-tim
 </script>
 ```
 
-### 2. Click the "Debug" button in your nav
+### Step 3: Open your app in any browser
 
-### 3. Interact with your page - see every event logged
+Works in Chrome, Firefox, Safari, Edge. No extension needed.
+
+### Step 4: See the debug panel
+
+A "Debug" button appears in your nav. Click it to open the console. Every interaction is logged in real-time.
+
+---
+
+## Privacy & Data Handling
+
+**This tool is 100% local by default.**
+
+| Mode | Where Data Goes | Who Can See It |
+|------|-----------------|----------------|
+| **Default** | Browser memory only | Only you, in your browser tab |
+| `persistLogs: true` | Browser's localStorage | Only you, on your device |
+| `sendToServer: true` | Your own server endpoint | You control the server |
+
+- No external servers. No analytics. No tracking.
+- Logs exist only in the browser tab while it's open
+- Close the tab = logs are gone (unless you enable persistence)
+- Export creates a local JSON file on your computer
+- Server logging only works if YOU set up an endpoint
+
+**The code is ~500 lines of vanilla JavaScript. Read it yourself:** [debugger.js](./debugger.js)
 
 ---
 
@@ -60,11 +85,11 @@ A drop-in JavaScript debugging console that tracks user interactions in real-tim
 
 ```javascript
 LiveDebugger.init({
-    enabled: true,              // Show panel on load (default: from localStorage)
-    maxEntries: 100,            // Max log entries to keep (default: 100)
-    persistLogs: false,         // Save to localStorage (default: false)
-    sendToServer: false,        // POST to your server (default: false)
-    serverEndpoint: '/api/logs' // Your endpoint (only used if sendToServer: true)
+    enabled: true,              // Show panel on load
+    maxEntries: 100,            // Max log entries to keep
+    persistLogs: false,         // Save to localStorage
+    sendToServer: false,        // POST to your server
+    serverEndpoint: '/api/logs' // Your endpoint (only if sendToServer: true)
 });
 ```
 
@@ -81,55 +106,7 @@ LiveDebugger.init({
 **Actions:**
 - **Export** - Download logs as JSON file (saves to your computer)
 - **Clear** - Wipe all logs from memory
-- **Close** - Hide the panel (toggle with Debug button)
-
----
-
-## Export Format
-
-When you click Export, you get a JSON file like this:
-
-```json
-{
-  "sessionId": "m5x7k2p",
-  "exportedAt": "2025-12-23T10:30:00.000Z",
-  "userAgent": "Mozilla/5.0...",
-  "url": "http://localhost:3000/mypage",
-  "entries": [
-    {
-      "timestamp": "2025-12-23T10:29:45.123Z",
-      "type": "CLICK",
-      "message": "button#submit - \"Save\""
-    }
-  ]
-}
-```
-
-This file is saved to your local Downloads folder. It never leaves your machine unless you share it.
-
----
-
-## Optional: Server Logging
-
-If you want to collect logs on your own server:
-
-```javascript
-LiveDebugger.init({
-    sendToServer: true,
-    serverEndpoint: '/api/debug-logs'
-});
-```
-
-Then create an endpoint on YOUR server to receive the logs. Example (FastAPI):
-
-```python
-@app.post("/api/debug-logs")
-async def receive_log(entry: dict):
-    print(f"[{entry['type']}] {entry['message']}")
-    return {"status": "ok"}
-```
-
-You control the server. You control the data.
+- **Close** - Hide the panel
 
 ---
 

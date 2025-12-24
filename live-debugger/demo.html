@@ -5,164 +5,292 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Debugger Demo</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --bg-dark: #3d4f5f;
+            --bg-darker: #2d3d4a;
+            --cream: #FFFFE8;
+            --green: #8FC22A;
+            --green-light: #DEFF63;
+            --blue: #668DED;
+            --orange: #D67008;
+            --text-light: #f5f5f5;
+            --text-muted: #a0a0a0;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: #1a1a2e;
-            color: #eee;
+            background: var(--bg-dark);
+            color: var(--text-light);
             line-height: 1.6;
+            min-height: 100vh;
         }
+        
         header {
+            background: var(--bg-darker);
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid var(--green);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .logo strong {
+            font-weight: 600;
+        }
+        
+        nav {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+        
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        
+        nav a:hover {
+            color: var(--cream);
+        }
+        
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .intro {
+            background: var(--cream);
+            color: var(--bg-darker);
+            padding: 24px 32px;
+            border-radius: 4px;
             margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #333;
         }
-        h1 { margin: 0; color: #0f0; }
-        nav { display: flex; gap: 15px; align-items: center; }
-        nav a { color: #888; text-decoration: none; }
-        nav a:hover { color: #0f0; }
+        
+        .intro h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .intro p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
         .section {
-            background: #16213e;
-            padding: 24px;
-            border-radius: 8px;
+            background: var(--bg-darker);
+            padding: 24px 32px;
+            border-radius: 4px;
             margin-bottom: 24px;
-            border: 1px solid #333;
+            border-left: 3px solid var(--green);
         }
-        h2 { color: #0f0; margin-top: 0; font-size: 18px; }
-        p { color: #aaa; margin: 0 0 16px 0; }
+        
+        h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        
+        p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
         button {
-            background: #0f0;
-            color: #000;
+            background: var(--green);
+            color: var(--bg-darker);
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: bold;
-            margin: 4px;
+            font-weight: 600;
+            transition: all 0.2s;
         }
-        button:hover { background: #00cc00; }
-        button.secondary { background: #4a90e2; color: white; }
-        button.danger { background: #ff6b6b; color: white; }
+        
+        button:hover {
+            background: var(--green-light);
+        }
+        
+        button.secondary {
+            background: var(--blue);
+            color: white;
+        }
+        
+        button.secondary:hover {
+            background: #7a9ef5;
+        }
+        
+        button.warning {
+            background: var(--orange);
+            color: white;
+        }
+        
+        button.warning:hover {
+            background: #e07a0a;
+        }
+        
         input, textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #333;
+            padding: 12px 16px;
+            border: 1px solid #556677;
             border-radius: 4px;
-            background: #0d1b2a;
-            color: #eee;
+            background: var(--bg-dark);
+            color: var(--text-light);
             font-size: 14px;
             margin-bottom: 12px;
+            transition: border-color 0.2s;
         }
-        input:focus, textarea:focus { outline: none; border-color: #0f0; }
-        .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-        .note {
-            background: #0d1b2a;
-            padding: 16px;
-            border-radius: 4px;
-            border-left: 3px solid #0f0;
-            margin-bottom: 24px;
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--green);
         }
-        footer { text-align: center; color: #666; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; }
-        a { color: #4a90e2; }
+        
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid #556677;
+            margin-top: 40px;
+        }
+        
+        footer a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: var(--bg-dark);
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Live Debugger</h1>
+        <div class="logo">Live <strong>Debugger</strong></div>
         <nav>
             <a href="https://github.com/kckassette/MemorySpaceFeatures">GitHub</a>
         </nav>
     </header>
 
-    <div class="note">
-        <strong>How to use:</strong> Click the <strong>Debug</strong> button (top right) to open the console. 
-        Then interact with the elements below - every action is logged in real-time.
-    </div>
-
-    <section class="section">
-        <h2>Click Events</h2>
-        <p>Click any button to see it logged:</p>
-        <div class="buttons">
-            <button id="btn-primary">Primary Action</button>
-            <button class="secondary" id="btn-secondary">Secondary</button>
-            <button class="danger" id="btn-danger">Danger Zone</button>
+    <main>
+        <div class="intro">
+            <h2>How to use this demo</h2>
+            <p>Click the <strong>Debug</strong> button in the header to open the console panel. Then interact with the elements below. Every click, keystroke, and network request is logged in real-time.</p>
         </div>
-    </section>
 
-    <section class="section">
-        <h2>Input Events</h2>
-        <p>Type in these fields to see input tracking:</p>
-        <input type="text" placeholder="Type something here..." id="demo-input">
-        <textarea placeholder="Or type a longer message..." rows="3" id="demo-textarea"></textarea>
-    </section>
+        <section class="section">
+            <h3>Click Events</h3>
+            <p>Click any button to see it logged with element details.</p>
+            <div class="buttons">
+                <button id="btn-primary">Primary Action</button>
+                <button class="secondary" id="btn-secondary">Secondary</button>
+                <button class="warning" id="btn-warning">Warning</button>
+            </div>
+        </section>
 
-    <section class="section">
-        <h2>Form Submission</h2>
-        <p>Submit this form to see form events:</p>
-        <form id="demo-form">
-            <input type="text" placeholder="Your name" id="name-input" required>
-            <input type="email" placeholder="Your email" id="email-input" required>
-            <button type="submit">Submit Form</button>
-        </form>
-    </section>
+        <section class="section">
+            <h3>Input Events</h3>
+            <p>Type in these fields to see keystroke tracking.</p>
+            <input type="text" placeholder="Start typing here..." id="demo-input">
+            <textarea placeholder="Or write something longer..." rows="3" id="demo-textarea"></textarea>
+        </section>
 
-    <section class="section">
-        <h2>Network Requests</h2>
-        <p>Trigger fetch requests to see network logging:</p>
-        <div class="buttons">
-            <button id="btn-fetch">Fetch API Call</button>
-            <button class="secondary" id="btn-fetch-error">Fetch (with error)</button>
-        </div>
-    </section>
+        <section class="section">
+            <h3>Form Submission</h3>
+            <p>Submit this form to see form events captured.</p>
+            <form id="demo-form">
+                <input type="text" placeholder="Your name" id="name-input" required>
+                <input type="email" placeholder="Your email" id="email-input" required>
+                <button type="submit">Submit Form</button>
+            </form>
+        </section>
 
-    <section class="section">
-        <h2>Error Tracking</h2>
-        <p>Trigger errors to see them captured:</p>
-        <div class="buttons">
-            <button class="danger" id="btn-error">Throw Error</button>
-            <button class="danger" id="btn-promise">Promise Rejection</button>
-        </div>
-    </section>
+        <section class="section">
+            <h3>Network Requests</h3>
+            <p>Trigger fetch requests to see the full request/response cycle.</p>
+            <div class="buttons">
+                <button id="btn-fetch">Fetch API Call</button>
+                <button class="secondary" id="btn-fetch-error">Fetch with Error</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <h3>Error Tracking</h3>
+            <p>Trigger JavaScript errors to see them captured.</p>
+            <div class="buttons">
+                <button class="warning" id="btn-error">Throw Error</button>
+                <button class="warning" id="btn-promise">Promise Rejection</button>
+            </div>
+        </section>
+    </main>
 
     <footer>
-        <p><strong>Live Debugger</strong> - Part of <a href="https://github.com/kckassette/MemorySpaceFeatures">MemorySpace Features</a></p>
-        <p>MIT Licensed</p>
+        <p><strong>Live Debugger</strong> is part of <a href="https://github.com/kckassette/MemorySpaceFeatures">MemorySpace Features</a></p>
+        <p style="margin-top: 8px;">100% local. No external servers. MIT Licensed.</p>
     </footer>
 
-    <!-- Load the debugger -->
     <script src="debugger.js"></script>
     <script>
-        // Initialize with debugging enabled
         LiveDebugger.init({
             enabled: true,
             maxEntries: 200,
             persistLogs: false
         });
 
-        // Form submission
         document.getElementById('demo-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('Form submitted! Check the debug console.');
+            alert('Form submitted. Check the debug console.');
         });
 
-        // Fetch success
         document.getElementById('btn-fetch').addEventListener('click', function() {
             fetch('https://jsonplaceholder.typicode.com/posts/1')
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     console.log('Fetched:', data.title);
-                    alert('Fetch successful! Check debug console.');
+                    alert('Fetch successful. Check debug console.');
                 });
         });
 
-        // Fetch error
         document.getElementById('btn-fetch-error').addEventListener('click', function() {
             fetch('https://httpstat.us/500')
                 .then(function(res) {
@@ -174,14 +302,12 @@
                 });
         });
 
-        // Throw error
         document.getElementById('btn-error').addEventListener('click', function() {
-            throw new Error('This is a test error!');
+            throw new Error('This is a test error.');
         });
 
-        // Promise rejection
         document.getElementById('btn-promise').addEventListener('click', function() {
-            Promise.reject(new Error('This promise was rejected!'));
+            Promise.reject(new Error('This promise was rejected.'));
         });
     </script>
 </body>

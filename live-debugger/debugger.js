@@ -39,16 +39,16 @@ const LiveDebugger = {
     
     // Event type colors
     colors: {
-        INIT: '#0f0',
-        CLICK: '#ff6b6b',
-        INPUT: '#00bfff',
-        KEY: '#ffff00',
-        FORM: '#ff00ff',
-        HTMX: '#ffa500',
-        FETCH: '#00bfff',
-        ERROR: '#ff0000',
-        WARN: '#ffa500',
-        INFO: '#0f0',
+        INIT: '#8FC22A',
+        CLICK: '#D67008',
+        INPUT: '#668DED',
+        KEY: '#DEFF63',
+        FORM: '#FFFFE8',
+        HTMX: '#D67008',
+        FETCH: '#668DED',
+        ERROR: '#ff6b6b',
+        WARN: '#D67008',
+        INFO: '#8FC22A',
         DEBUG: '#888'
     },
 
@@ -87,25 +87,25 @@ const LiveDebugger = {
             right: 0;
             width: 450px;
             max-height: 70vh;
-            background: rgba(0, 0, 0, 0.95);
-            color: #0f0;
+            background: #2d3d4a;
+            color: #8FC22A;
             font-family: 'Courier New', monospace;
             font-size: 11px;
-            border: 2px solid #0f0;
+            border: 2px solid #8FC22A;
             border-radius: 8px 0 0 0;
             overflow: hidden;
             z-index: 999999;
-            box-shadow: 0 -4px 20px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 -4px 20px rgba(143, 194, 42, 0.2);
             resize: both;
         `;
 
         panel.innerHTML = `
-            <div id="debug-header" style="background: #1a1a1a; padding: 8px; border-bottom: 1px solid #0f0; display: flex; justify-content: space-between; align-items: center; cursor: move;">
-                <strong style="color: #0f0;">LIVE DEBUG CONSOLE</strong>
+            <div id="debug-header" style="background: #3d4f5f; padding: 8px; border-bottom: 1px solid #8FC22A; display: flex; justify-content: space-between; align-items: center; cursor: move;">
+                <strong style="color: #8FC22A;">LIVE DEBUG CONSOLE</strong>
                 <div>
-                    <button id="debug-export" style="padding: 2px 8px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Export</button>
-                    <button id="debug-clear" style="padding: 2px 8px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Clear</button>
-                    <button id="debug-close" style="padding: 2px 8px; background: #666; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">✕</button>
+                    <button id="debug-export" style="padding: 2px 8px; background: #668DED; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Export</button>
+                    <button id="debug-clear" style="padding: 2px 8px; background: #D67008; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Clear</button>
+                    <button id="debug-close" style="padding: 2px 8px; background: #556677; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">✕</button>
                 </div>
             </div>
             <div id="debug-log" style="padding: 8px; overflow-y: auto; max-height: calc(70vh - 40px); line-height: 1.4;"></div>
@@ -135,8 +135,8 @@ const LiveDebugger = {
             btn.innerHTML = 'Debug';
             btn.style.cssText = `
                 padding: 6px 12px;
-                background: #ff6b6b;
-                color: white;
+                background: #8FC22A;
+                color: #2d3d4a;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
