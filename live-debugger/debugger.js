@@ -33,7 +33,7 @@ const LiveDebugger = {
 
     // State
     panel: null,
-    log: null,
+    logContainer: null,
     entries: [],
     sessionId: Date.now().toString(36),
     
@@ -70,7 +70,7 @@ const LiveDebugger = {
             this.restoreLogs();
         }
         
-        this.log('INIT', `Live Debugger v1.0.0 initialized (session: ${this.sessionId})`, this.colors.INIT);
+        this.addLog('INIT', `Live Debugger v1.0.0 initialized (session: ${this.sessionId})`, this.colors.INIT);
     },
 
     /**
@@ -101,7 +101,7 @@ const LiveDebugger = {
 
         panel.innerHTML = `
             <div id="debug-header" style="background: #1a1a1a; padding: 8px; border-bottom: 1px solid #0f0; display: flex; justify-content: space-between; align-items: center; cursor: move;">
-                <strong style="color: #0f0;">🐛 LIVE DEBUG CONSOLE</strong>
+                <strong style="color: #0f0;">LIVE DEBUG CONSOLE</strong>
                 <div>
                     <button id="debug-export" style="padding: 2px 8px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Export</button>
                     <button id="debug-clear" style="padding: 2px 8px; background: #ff6b6b; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Clear</button>
@@ -114,7 +114,7 @@ const LiveDebugger = {
         document.body.appendChild(panel);
         
         this.panel = panel;
-        this.log = document.getElementById('debug-log');
+        this.logContainer = document.getElementById('debug-log');
 
         // Make draggable
         this.makeDraggable();
@@ -132,7 +132,7 @@ const LiveDebugger = {
         if (nav) {
             const btn = document.createElement('button');
             btn.id = 'live-debug-toggle';
-            btn.innerHTML = '🐛 Debug';
+            btn.innerHTML = 'Debug';
             btn.style.cssText = `
                 padding: 6px 12px;
                 background: #ff6b6b;
@@ -187,8 +187,8 @@ const LiveDebugger = {
         // Clear button
         document.getElementById('debug-clear').addEventListener('click', () => {
             this.entries = [];
-            this.log.innerHTML = '';
-            this.log('CLEAR', 'Debug log cleared', this.colors.INFO);
+            this.logContainer.innerHTML = '';
+            this.addLog('CLEAR', 'Debug log cleared', this.colors.INFO);
         });
 
         // Close button
@@ -211,14 +211,14 @@ const LiveDebugger = {
             const classes = target.className ? `.${Array.from(target.classList).join('.')}` : '';
             const text = target.textContent ? target.textContent.trim().substring(0, 40) : '';
             
-            this.log('CLICK', `${tagName}${id}${classes} - "${text}"`, this.colors.CLICK);
+            this.addLog('CLICK', `${tagName}${id}${classes} - "${text}"`, this.colors.CLICK);
             
             // Check htmx attributes
             if (target.hasAttribute('hx-get')) {
-                this.log('HTMX', `Element has hx-get="${target.getAttribute('hx-get')}"`, this.colors.HTMX);
+                this.addLog('HTMX', `Element has hx-get="${target.getAttribute('hx-get')}"`, this.colors.HTMX);
             }
             if (target.hasAttribute('hx-post')) {
-                this.log('HTMX', `Element has hx-post="${target.getAttribute('hx-post')}"`, this.colors.HTMX);
+                this.addLog('HTMX', `Element has hx-post="${target.getAttribute('hx-post')}"`, this.colors.HTMX);
             }
         }, true);
 
@@ -229,19 +229,19 @@ const LiveDebugger = {
             if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
                 const id = e.target.id || e.target.name || 'unnamed';
                 const value = e.target.value.substring(0, 50);
-                this.log('INPUT', `${id} = "${value}"`, this.colors.INPUT);
+                this.addLog('INPUT', `${id} = "${value}"`, this.colors.INPUT);
             }
         }, true);
 
         // Track form submissions
         document.addEventListener('submit', (e) => {
-            this.log('FORM', `Form submitted: ${e.target.action || 'no action'}`, this.colors.FORM);
+            this.addLog('FORM', `Form submitted: ${e.target.action || 'no action'}`, this.colors.FORM);
         }, true);
 
         // Track keyboard events
         document.addEventListener('keydown', (e) => {
             if (['Enter', 'Escape', '/'].includes(e.key)) {
-                this.log('KEY', `${e.key} pressed on ${e.target.tagName}${e.target.id ? '#' + e.target.id : ''}`, this.colors.KEY);
+                this.addLog('KEY', `${e.key} pressed on ${e.target.tagName}${e.target.id ? '#' + e.target.id : ''}`, this.colors.KEY);
             }
         }, true);
 
@@ -256,11 +256,11 @@ const LiveDebugger = {
 
         // Error tracking
         window.addEventListener('error', (e) => {
-            this.log('ERROR', `${e.message} at ${e.filename}:${e.lineno}:${e.colno}`, this.colors.ERROR);
+            this.addLog('ERROR', `${e.message} at ${e.filename}:${e.lineno}:${e.colno}`, this.colors.ERROR);
         });
 
         window.addEventListener('unhandledrejection', (e) => {
-            this.log('ERROR', `Unhandled rejection: ${e.reason}`, this.colors.ERROR);
+            this.addLog('ERROR', `Unhandled rejection: ${e.reason}`, this.colors.ERROR);
         });
     },
 
@@ -271,12 +271,12 @@ const LiveDebugger = {
         document.body.addEventListener('htmx:configRequest', (e) => {
             const url = e.detail.path;
             const params = new URLSearchParams(e.detail.parameters).toString();
-            this.log('HTMX', `Config: ${url}?${params}`, this.colors.HTMX);
+            this.addLog('HTMX', `Config: ${url}?${params}`, this.colors.HTMX);
         });
 
         document.body.addEventListener('htmx:beforeRequest', (e) => {
             const url = e.detail.pathInfo ? e.detail.pathInfo.requestPath : 'unknown';
-            this.log('HTMX', `→ Request: ${url}`, this.colors.HTMX);
+            this.addLog('HTMX', `Request: ${url}`, this.colors.HTMX);
         });
 
         document.body.addEventListener('htmx:afterRequest', (e) => {
@@ -284,25 +284,25 @@ const LiveDebugger = {
             const statusColor = status >= 200 && status < 300 ? this.colors.INFO : this.colors.ERROR;
             const responseLength = e.detail.xhr.responseText.length;
             const url = e.detail.pathInfo ? e.detail.pathInfo.requestPath : 'unknown';
-            this.log('HTMX', `← ${status} from ${url} (${responseLength} bytes)`, statusColor);
+            this.addLog('HTMX', `${status} from ${url} (${responseLength} bytes)`, statusColor);
             
             if (status >= 400) {
                 const preview = e.detail.xhr.responseText.substring(0, 200);
-                this.log('ERROR', preview, this.colors.ERROR);
+                this.addLog('ERROR', preview, this.colors.ERROR);
             }
         });
 
         document.body.addEventListener('htmx:beforeSwap', (e) => {
             const targetId = e.detail.target.id || e.detail.target.className || 'unknown';
-            this.log('HTMX', `Swapping into: ${targetId}`, this.colors.HTMX);
+            this.addLog('HTMX', `Swapping into: ${targetId}`, this.colors.HTMX);
         });
 
         document.body.addEventListener('htmx:responseError', (e) => {
-            this.log('ERROR', `htmx response error: ${e.detail.xhr.status}`, this.colors.ERROR);
+            this.addLog('ERROR', `htmx response error: ${e.detail.xhr.status}`, this.colors.ERROR);
         });
 
         document.body.addEventListener('htmx:sendError', (e) => {
-            this.log('ERROR', `htmx send error: ${e.detail.error}`, this.colors.ERROR);
+            this.addLog('ERROR', `htmx send error: ${e.detail.error}`, this.colors.ERROR);
         });
     },
 
@@ -311,16 +311,17 @@ const LiveDebugger = {
      */
     interceptFetch() {
         const originalFetch = window.fetch;
-        window.fetch = (...args) => {
-            this.log('FETCH', `→ ${args[0]}`, this.colors.FETCH);
-            return originalFetch.apply(this, args)
+        const self = this;
+        window.fetch = function(...args) {
+            self.addLog('FETCH', `>> ${args[0]}`, self.colors.FETCH);
+            return originalFetch.apply(window, args)
                 .then(response => {
-                    const color = response.ok ? this.colors.INFO : this.colors.ERROR;
-                    this.log('FETCH', `← ${response.status} ${args[0]}`, color);
+                    const color = response.ok ? self.colors.INFO : self.colors.ERROR;
+                    self.addLog('FETCH', `<< ${response.status} ${args[0]}`, color);
                     return response;
                 })
                 .catch(error => {
-                    this.log('ERROR', `Fetch error: ${error.message}`, this.colors.ERROR);
+                    self.addLog('ERROR', `Fetch error: ${error.message}`, self.colors.ERROR);
                     throw error;
                 });
         };
@@ -340,15 +341,15 @@ const LiveDebugger = {
         };
 
         XMLHttpRequest.prototype.send = function() {
-            LiveDebugger.log('XHR', `→ ${this._debugMethod} ${this._debugUrl}`, LiveDebugger.colors.FETCH);
+            LiveDebugger.addLog('XHR', `>> ${this._debugMethod} ${this._debugUrl}`, LiveDebugger.colors.FETCH);
             
             this.addEventListener('load', function() {
                 const color = this.status >= 200 && this.status < 300 ? LiveDebugger.colors.INFO : LiveDebugger.colors.ERROR;
-                LiveDebugger.log('XHR', `← ${this.status} ${this._debugUrl}`, color);
+                LiveDebugger.addLog('XHR', `<< ${this.status} ${this._debugUrl}`, color);
             });
             
             this.addEventListener('error', function() {
-                LiveDebugger.log('ERROR', `XHR error: ${this._debugUrl}`, LiveDebugger.colors.ERROR);
+                LiveDebugger.addLog('ERROR', `XHR error: ${this._debugUrl}`, LiveDebugger.colors.ERROR);
             });
             
             return originalSend.apply(this, arguments);
@@ -358,7 +359,7 @@ const LiveDebugger = {
     /**
      * Main logging function
      */
-    log(type, message, color = this.colors.INFO) {
+    addLog(type, message, color = this.colors.INFO) {
         const timestamp = new Date().toLocaleTimeString('en-US', { 
             hour12: false, 
             hour: '2-digit', 
@@ -397,8 +398,8 @@ const LiveDebugger = {
         div.style.cssText = 'margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 4px;';
         div.innerHTML = `<span style="color: #666;">${timestamp}</span> <span style="color: ${color}; font-weight: bold;">[${type}]</span> ${this.escapeHtml(message)}`;
         
-        this.log.appendChild(div);
-        this.log.scrollTop = this.log.scrollHeight;
+        this.logContainer.appendChild(div);
+        this.logContainer.scrollTop = this.logContainer.scrollHeight;
 
         // Console log
         console.log(`[${type}] ${message}`);
@@ -413,7 +414,7 @@ const LiveDebugger = {
         this.panel.style.display = this.config.enabled ? 'block' : 'none';
         
         if (this.config.enabled) {
-            this.log('INFO', 'Debug panel enabled', this.colors.INFO);
+            this.addLog('INFO', 'Debug panel enabled', this.colors.INFO);
         }
     },
 
@@ -437,7 +438,7 @@ const LiveDebugger = {
         a.click();
         URL.revokeObjectURL(url);
         
-        this.log('INFO', `Exported ${this.entries.length} log entries`, this.colors.INFO);
+        this.addLog('INFO', `Exported ${this.entries.length} log entries`, this.colors.INFO);
     },
 
     /**
@@ -466,7 +467,7 @@ const LiveDebugger = {
                         hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 
                     });
                     div.innerHTML = `<span style="color: #666;">${time}</span> <span style="color: ${entry.color}; font-weight: bold;">[${entry.type}]</span> ${this.escapeHtml(entry.message)}`;
-                    this.log.appendChild(div);
+                    this.logContainer.appendChild(div);
                 });
             }
         } catch (e) {
