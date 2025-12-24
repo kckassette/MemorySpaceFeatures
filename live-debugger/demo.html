@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Debugger Demo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #1a1a2e;
+            color: #eee;
+            line-height: 1.6;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        h1 {
+            margin: 0;
+            color: #0f0;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            color: #888;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            color: #0f0;
+        }
+        .demo-section {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+        h2 {
+            color: #0f0;
+            margin-top: 0;
+        }
+        .instructions {
+            background: #0d1b2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #0f0;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #00ff00;
+            transform: translateY(-2px);
+        }
+        button.secondary {
+            background: #4a90e2;
+            color: white;
+        }
+        button.danger {
+            background: #ff6b6b;
+            color: white;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #0d1b2a;
+            color: #eee;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #0f0;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .feature {
+            background: #0d1b2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        footer {
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        a {
+            color: #4a90e2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🐛 Live Debugger</h1>
+        <nav class="nav-links">
+            <a href="#demo">Demo</a>
+            <a href="#features">Features</a>
+            <a href="https://github.com/kckassette/MemorySpaceFeatures">GitHub</a>
+            <!-- Debug button will be auto-injected here -->
+        </nav>
+    </header>
+
+    <div class="instructions">
+        <strong>👋 Try it out!</strong> Click the <strong>🐛 Debug</strong> button in the top right to open the debug console. 
+        Then interact with the elements below and watch the events appear in real-time.
+    </div>
+
+    <section class="demo-section" id="demo">
+        <h2>🖱️ Click Events</h2>
+        <p>Click any button to see it logged:</p>
+        <div class="button-group">
+            <button onclick="console.log('Primary clicked')">Primary Action</button>
+            <button class="secondary" onclick="console.log('Secondary clicked')">Secondary</button>
+            <button class="danger" onclick="console.log('Danger clicked')">Danger Zone</button>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2>⌨️ Input Events</h2>
+        <p>Type in these fields to see input tracking:</p>
+        <input type="text" placeholder="Type something here..." id="demo-input">
+        <textarea placeholder="Or type a longer message here..." rows="3" id="demo-textarea"></textarea>
+    </section>
+
+    <section class="demo-section">
+        <h2>📝 Form Submission</h2>
+        <p>Submit this form to see form events:</p>
+        <form onsubmit="event.preventDefault(); alert('Form submitted! Check the debug console.');">
+            <input type="text" placeholder="Your name" required>
+            <input type="email" placeholder="Your email" required>
+            <button type="submit">Submit Form</button>
+        </form>
+    </section>
+
+    <section class="demo-section">
+        <h2>🌐 Network Requests</h2>
+        <p>Trigger a fetch request to see network logging:</p>
+        <div class="button-group">
+            <button onclick="fetchData()">Fetch API Call</button>
+            <button class="secondary" onclick="fetchWithError()">Fetch (with error)</button>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2>⚠️ Error Tracking</h2>
+        <p>Trigger errors to see them captured:</p>
+        <div class="button-group">
+            <button class="danger" onclick="throwError()">Throw Error</button>
+            <button class="danger" onclick="promiseRejection()">Promise Rejection</button>
+        </div>
+    </section>
+
+    <section class="demo-section" id="features">
+        <h2>✨ Features</h2>
+        <div class="feature-list">
+            <div class="feature">
+                <div class="feature-icon">🖱️</div>
+                <strong>Click Tracking</strong>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⌨️</div>
+                <strong>Input Logging</strong>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🌐</div>
+                <strong>Network Monitor</strong>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚠️</div>
+                <strong>Error Capture</strong>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📦</div>
+                <strong>JSON Export</strong>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎨</div>
+                <strong>Color Coded</strong>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>
+            <strong>Live Debugger</strong> - Part of 
+            <a href="https://github.com/kckassette/MemorySpaceFeatures">MemorySpace Features</a>
+        </p>
+        <p>MIT Licensed | Made with ❤️ while building MemoryIntelligence™️</p>
+    </footer>
+
+    <!-- Load the debugger -->
+    <script src="debugger.js"></script>
+    <script>
+        // Initialize with debugging enabled
+        LiveDebugger.init({
+            enabled: true,
+            maxEntries: 200,
+            persistLogs: false
+        });
+
+        // Demo functions
+        function fetchData() {
+            fetch('https://jsonplaceholder.typicode.com/posts/1')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Fetched:', data.title);
+                    alert('Fetch successful! Check debug console for details.');
+                });
+        }
+
+        function fetchWithError() {
+            fetch('https://httpstat.us/500')
+                .then(res => {
+                    if (!res.ok) throw new Error('Server returned ' + res.status);
+                    return res.json();
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err.message);
+                });
+        }
+
+        function throwError() {
+            throw new Error('This is a test error!');
+        }
+
+        function promiseRejection() {
+            Promise.reject(new Error('This promise was rejected!'));
+        }
+    </script>
+</body>
+</html>

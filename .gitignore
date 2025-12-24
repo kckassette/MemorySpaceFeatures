@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node (if used later)
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Local files
+*.local
