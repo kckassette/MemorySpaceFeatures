@@ -1,6 +1,6 @@
 # MemorySpace Features
 
-Small, useful tools extracted from building [MemoryIntelligence](https://github.com/kckassette/MemoryIntelligence) - shared as part of my **Build in Public** journey.
+Small, useful tools extracted from building - shared as part of my **Build in Public** journey.
 
 ## 🔧 Available Features
 
