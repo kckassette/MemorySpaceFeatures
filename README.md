@@ -69,5 +69,5 @@ All features are MIT Licensed unless otherwise noted.
 
 ---
 
-**Made with ❤️ while building MemoryIntelligence™️**
+**From MemorySpace Studio building MemoryIntelligence™️**
 
