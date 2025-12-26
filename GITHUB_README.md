@@ -7,8 +7,6 @@ Small, useful tools extracted from building [MemoryIntelligence](https://github.
 ### [Live Debugger](./live-debugger/) 
 A drop-in JavaScript debugging console that tracks all user interactions in real-time.
 
-![Live Debugger Demo](./live-debugger/demo.gif)
-
 | What it does | Why you'd want it |
 |--------------|-------------------|
 | Logs every click, input, keyboard event | See exactly what users do |
@@ -61,7 +59,15 @@ Just copy what you need into your project!
 Found a bug? Have an idea? 
 - Open an issue
 - Submit a PR
+- Or just star the repo ⭐
 
 ---
 
-**Made with ❤️ by [@kckassette](https://github.com/kckassette)**
+## 📜 License
+
+All features are MIT Licensed unless otherwise noted.
+
+---
+
+**From MemorySpace Studio building MemoryIntelligence™️**
+
