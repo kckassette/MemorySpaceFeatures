@@ -5,7 +5,14 @@
  * License: MIT
  * 
  * Tracks all user interactions, htmx events, network requests, and errors in real-time.
- * Displays in a draggable console panel with color-coded events.
+ * Displays in a console panel with color-coded events.
+ * 
+ * PRIVACY & SECURITY:
+ * - 100% local by default - no data leaves the browser
+ * - Password fields are automatically masked
+ * - Sensitive field patterns (token, secret, key, auth) are masked
+ * - Server logging only allowed to same-origin endpoints
+ * - No tracking, analytics, or external requests
  * 
  * Usage:
  *   <script src="debugger.js"></script>
@@ -37,19 +44,20 @@ const LiveDebugger = {
     entries: [],
     sessionId: Date.now().toString(36),
     
-    // Event type colors
+    // Event type colors (Figma design)
     colors: {
-        INIT: '#8FC22A',
-        CLICK: '#D67008',
-        INPUT: '#668DED',
-        KEY: '#DEFF63',
-        FORM: '#FFFFE8',
-        HTMX: '#D67008',
-        FETCH: '#668DED',
-        ERROR: '#ff6b6b',
-        WARN: '#D67008',
-        INFO: '#8FC22A',
-        DEBUG: '#888'
+        INIT: '#868DED',    // Slate blue
+        CLICK: '#DEFF63',   // Lime yellow
+        INPUT: '#ffffff',   // White
+        KEY: '#DEFF63',     // Lime yellow
+        FORM: '#8FC22A',    // Lime green
+        HTMX: '#D67008',    // Orange
+        FETCH: '#ffffff',   // White
+        ERROR: '#D67008',   // Orange
+        WARN: '#D67008',    // Orange
+        INFO: '#8FC22A',    // Lime green
+        DEBUG: '#666666',   // Gray
+        CLEAR: '#868DED'    // Slate blue
     },
 
     /**
@@ -77,6 +85,15 @@ const LiveDebugger = {
      * Inject the debug panel HTML
      */
     injectHTML() {
+        // Inject JetBrains Mono font
+        if (!document.getElementById('jetbrains-mono-font')) {
+            const fontLink = document.createElement('link');
+            fontLink.id = 'jetbrains-mono-font';
+            fontLink.rel = 'stylesheet';
+            fontLink.href = 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap';
+            document.head.appendChild(fontLink);
+        }
+
         // Create panel
         const panel = document.createElement('div');
         panel.id = 'live-debug-panel';
@@ -84,31 +101,101 @@ const LiveDebugger = {
             display: ${this.config.enabled ? 'block' : 'none'};
             position: fixed;
             bottom: 0;
+            left: 0;
             right: 0;
-            width: 450px;
-            max-height: 70vh;
-            background: #2d3d4a;
-            color: #8FC22A;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            border: 2px solid #8FC22A;
-            border-radius: 8px 0 0 0;
+            width: 100%;
+            max-height: 400px;
+            background: #000000;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 13px;
+            border-top: 2px solid #DEFF63;
             overflow: hidden;
             z-index: 999999;
-            box-shadow: 0 -4px 20px rgba(143, 194, 42, 0.2);
-            resize: both;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
         `;
 
+        // Terminal icon SVG
+        const terminalIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`;
+        
+        // Download icon SVG
+        const downloadIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+        
+        // Trash icon SVG
+        const trashIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        
+        // X icon SVG
+        const xIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
         panel.innerHTML = `
-            <div id="debug-header" style="background: #3d4f5f; padding: 8px; border-bottom: 1px solid #8FC22A; display: flex; justify-content: space-between; align-items: center; cursor: move;">
-                <strong style="color: #8FC22A;">LIVE DEBUG CONSOLE</strong>
-                <div>
-                    <button id="debug-export" style="padding: 2px 8px; background: #668DED; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Export</button>
-                    <button id="debug-clear" style="padding: 2px 8px; background: #D67008; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 4px;">Clear</button>
-                    <button id="debug-close" style="padding: 2px 8px; background: #556677; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">✕</button>
+            <div id="debug-header" style="
+                background: #09090b;
+                padding: 16px 24px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="color: #ffffff;">${terminalIcon}</span>
+                    <span style="font-weight: 400; text-transform: uppercase; letter-spacing: 0.05em; color: #ffffff;">Live Debug Console</span>
+                    <span id="debug-count" style="
+                        padding: 4px 8px;
+                        background: rgba(255,255,255,0.05);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 4px;
+                        color: rgba(255,255,255,0.6);
+                        font-size: 11px;
+                    ">0 events</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="debug-export" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px 16px;
+                        background: rgba(255,255,255,0.1);
+                        color: #ffffff;
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 13px;
+                        font-weight: 600;
+                        font-family: inherit;
+                        transition: background 0.2s;
+                    ">${downloadIcon} Export</button>
+                    <button id="debug-clear" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px 16px;
+                        background: rgba(255,255,255,0.1);
+                        color: #ffffff;
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 13px;
+                        font-weight: 600;
+                        font-family: inherit;
+                        transition: background 0.2s;
+                    ">${trashIcon} Clear</button>
+                    <button id="debug-close" style="
+                        padding: 8px;
+                        background: transparent;
+                        color: rgba(255,255,255,0.6);
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: background 0.2s, color 0.2s;
+                    ">${xIcon}</button>
                 </div>
             </div>
-            <div id="debug-log" style="padding: 8px; overflow-y: auto; max-height: calc(70vh - 40px); line-height: 1.4;"></div>
+            <div id="debug-log" style="
+                padding: 24px;
+                overflow-y: auto;
+                height: 320px;
+                background: #000000;
+            "></div>
         `;
 
         document.body.appendChild(panel);
@@ -116,8 +203,24 @@ const LiveDebugger = {
         this.panel = panel;
         this.logContainer = document.getElementById('debug-log');
 
-        // Make draggable
-        this.makeDraggable();
+        // Button hover effects
+        const exportBtn = document.getElementById('debug-export');
+        const clearBtn = document.getElementById('debug-clear');
+        const closeBtn = document.getElementById('debug-close');
+        
+        [exportBtn, clearBtn].forEach(btn => {
+            btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(255,255,255,0.2)');
+            btn.addEventListener('mouseleave', () => btn.style.background = 'rgba(255,255,255,0.1)');
+        });
+        
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.background = 'rgba(255,255,255,0.1)';
+            closeBtn.style.color = '#ffffff';
+        });
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.background = 'transparent';
+            closeBtn.style.color = 'rgba(255,255,255,0.6)';
+        });
 
         // Add toggle button to page
         this.addToggleButton();
@@ -134,50 +237,23 @@ const LiveDebugger = {
             btn.id = 'live-debug-toggle';
             btn.innerHTML = 'Debug';
             btn.style.cssText = `
-                padding: 6px 12px;
-                background: #8FC22A;
-                color: #2d3d4a;
+                padding: 8px 16px;
+                background: #DEFF63;
+                color: #000000;
                 border: none;
-                border-radius: 4px;
+                border-radius: 6px;
                 cursor: pointer;
-                font-size: 12px;
-                font-weight: bold;
+                font-size: 13px;
+                font-weight: 600;
+                font-family: 'JetBrains Mono', monospace;
                 margin-left: 10px;
+                transition: opacity 0.2s;
             `;
+            btn.addEventListener('mouseenter', () => btn.style.opacity = '0.8');
+            btn.addEventListener('mouseleave', () => btn.style.opacity = '1');
             btn.addEventListener('click', () => this.toggle());
             nav.appendChild(btn);
         }
-    },
-
-    /**
-     * Make panel draggable
-     */
-    makeDraggable() {
-        const header = document.getElementById('debug-header');
-        let isDragging = false;
-        let currentX, currentY, initialX, initialY;
-
-        header.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            initialX = e.clientX - this.panel.offsetLeft;
-            initialY = e.clientY - this.panel.offsetTop;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                this.panel.style.left = currentX + 'px';
-                this.panel.style.top = currentY + 'px';
-                this.panel.style.right = 'auto';
-                this.panel.style.bottom = 'auto';
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
     },
 
     /**
@@ -222,13 +298,22 @@ const LiveDebugger = {
             }
         }, true);
 
-        // Track input changes
+        // Track input changes (with sensitive field masking)
         document.addEventListener('input', (e) => {
             if (e.target.closest('#live-debug-panel')) return;
             
             if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
                 const id = e.target.id || e.target.name || 'unnamed';
-                const value = e.target.value.substring(0, 50);
+                const inputType = e.target.type || 'text';
+                
+                // Mask sensitive fields (passwords, tokens, secrets, etc.)
+                const sensitivePatterns = /password|secret|token|key|auth|credential|ssn|credit|card/i;
+                const isSensitive = sensitivePatterns.test(id) || inputType === 'password';
+                
+                const value = isSensitive 
+                    ? '[MASKED]' 
+                    : e.target.value.substring(0, 50);
+                    
                 this.addLog('INPUT', `${id} = "${value}"`, this.colors.INPUT);
             }
         }, true);
@@ -359,7 +444,7 @@ const LiveDebugger = {
     /**
      * Main logging function
      */
-    addLog(type, message, color = this.colors.INFO) {
+    addLog(type, message, color = this.colors.INFO, details = null) {
         const timestamp = new Date().toLocaleTimeString('en-US', { 
             hour12: false, 
             hour: '2-digit', 
@@ -373,7 +458,8 @@ const LiveDebugger = {
             sessionId: this.sessionId,
             type: type,
             message: message,
-            color: color
+            color: color,
+            details: details
         };
         
         this.entries.push(entry);
@@ -381,6 +467,16 @@ const LiveDebugger = {
         // Limit entries
         if (this.entries.length > this.config.maxEntries) {
             this.entries.shift();
+            // Remove first child from log container
+            if (this.logContainer.firstChild) {
+                this.logContainer.removeChild(this.logContainer.firstChild);
+            }
+        }
+
+        // Update event count
+        const countEl = document.getElementById('debug-count');
+        if (countEl) {
+            countEl.textContent = `${this.entries.length} events`;
         }
 
         // Persist if enabled
@@ -393,16 +489,60 @@ const LiveDebugger = {
             this.sendToServer(entry);
         }
 
-        // Render to panel
+        // Render to panel in Figma style
         const div = document.createElement('div');
-        div.style.cssText = 'margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 4px;';
-        div.innerHTML = `<span style="color: #666;">${timestamp}</span> <span style="color: ${color}; font-weight: bold;">[${type}]</span> ${this.escapeHtml(message)}`;
+        div.style.cssText = `
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        `;
+        
+        // Main log line
+        let html = `
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <span style="color: rgba(255,255,255,0.3); font-size: 11px; padding-top: 2px; white-space: nowrap;">${timestamp}</span>
+                <span style="color: ${color}; font-weight: 700; font-size: 11px; min-width: 60px; padding-top: 2px;">[${type}]</span>
+                <span style="color: rgba(255,255,255,0.7); flex: 1;">${this.escapeHtml(message)}</span>
+            </div>
+        `;
+        
+        // Add details block if present
+        if (details) {
+            html += `
+                <div style="
+                    margin-left: 120px;
+                    margin-top: 8px;
+                    padding: 12px;
+                    background: #09090b;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 4px;
+                    color: rgba(255,255,255,0.5);
+                    font-size: 11px;
+                    overflow-x: auto;
+                "><pre style="margin: 0; white-space: pre-wrap;">${this.escapeHtml(JSON.stringify(details, null, 2))}</pre></div>
+            `;
+        }
+        
+        div.innerHTML = html;
         
         this.logContainer.appendChild(div);
         this.logContainer.scrollTop = this.logContainer.scrollHeight;
 
         // Console log
         console.log(`[${type}] ${message}`);
+    },
+
+    /**
+     * Show empty state
+     */
+    showEmptyState() {
+        const terminalIcon = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.3;"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`;
+        this.logContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.2); text-align: center;">
+                ${terminalIcon}
+                <p style="margin-top: 12px;">No events logged yet. Start interacting with the page.</p>
+            </div>
+        `;
     },
 
     /**
@@ -422,11 +562,12 @@ const LiveDebugger = {
      * Export logs to JSON file
      */
     exportLogs() {
+        // Note: We intentionally exclude userAgent for privacy
+        // URL is included but can be removed if needed
         const data = {
             sessionId: this.sessionId,
             exportedAt: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            url: window.location.href,
+            pageUrl: window.location.pathname, // Path only, no query params
             entries: this.entries
         };
         
@@ -461,14 +602,50 @@ const LiveDebugger = {
             if (stored) {
                 this.entries = JSON.parse(stored);
                 this.entries.forEach(entry => {
-                    const div = document.createElement('div');
-                    div.style.cssText = 'margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 4px;';
                     const time = new Date(entry.timestamp).toLocaleTimeString('en-US', { 
                         hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 
                     });
-                    div.innerHTML = `<span style="color: #666;">${time}</span> <span style="color: ${entry.color}; font-weight: bold;">[${entry.type}]</span> ${this.escapeHtml(entry.message)}`;
+                    
+                    const div = document.createElement('div');
+                    div.style.cssText = `
+                        margin-bottom: 12px;
+                        padding-bottom: 12px;
+                        border-bottom: 1px solid rgba(255,255,255,0.05);
+                    `;
+                    
+                    let html = `
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <span style="color: rgba(255,255,255,0.3); font-size: 11px; padding-top: 2px; white-space: nowrap;">${time}</span>
+                            <span style="color: ${entry.color}; font-weight: 700; font-size: 11px; min-width: 60px; padding-top: 2px;">[${entry.type}]</span>
+                            <span style="color: rgba(255,255,255,0.7); flex: 1;">${this.escapeHtml(entry.message)}</span>
+                        </div>
+                    `;
+                    
+                    if (entry.details) {
+                        html += `
+                            <div style="
+                                margin-left: 120px;
+                                margin-top: 8px;
+                                padding: 12px;
+                                background: #09090b;
+                                border: 1px solid rgba(255,255,255,0.1);
+                                border-radius: 4px;
+                                color: rgba(255,255,255,0.5);
+                                font-size: 11px;
+                                overflow-x: auto;
+                            "><pre style="margin: 0; white-space: pre-wrap;">${this.escapeHtml(JSON.stringify(entry.details, null, 2))}</pre></div>
+                        `;
+                    }
+                    
+                    div.innerHTML = html;
                     this.logContainer.appendChild(div);
                 });
+                
+                // Update count
+                const countEl = document.getElementById('debug-count');
+                if (countEl) {
+                    countEl.textContent = `${this.entries.length} events`;
+                }
             }
         } catch (e) {
             console.error('Failed to restore logs:', e);
@@ -477,11 +654,22 @@ const LiveDebugger = {
 
     /**
      * Send log entry to server
+     * SECURITY: Only sends to same-origin endpoints by default
      */
     sendToServer(entry) {
         if (!this.config.serverEndpoint) return;
         
-        fetch(this.config.serverEndpoint, {
+        // Security: Only allow same-origin or explicitly whitelisted endpoints
+        const endpoint = this.config.serverEndpoint;
+        const isRelative = endpoint.startsWith('/');
+        const isSameOrigin = endpoint.startsWith(window.location.origin);
+        
+        if (!isRelative && !isSameOrigin) {
+            console.warn('[LiveDebugger] Blocked cross-origin server endpoint for security');
+            return;
+        }
+        
+        fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry)

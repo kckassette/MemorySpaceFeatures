@@ -3,311 +3,727 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Debugger Demo</title>
+    <title>Live Debugger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        :root {
-            --bg-dark: #3d4f5f;
-            --bg-darker: #2d3d4a;
-            --cream: #FFFFE8;
-            --green: #8FC22A;
-            --green-light: #DEFF63;
-            --blue: #668DED;
-            --orange: #D67008;
-            --text-light: #f5f5f5;
-            --text-muted: #a0a0a0;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-light);
-            line-height: 1.6;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.5;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
             min-height: 100vh;
-        }
-        
-        header {
-            background: var(--bg-darker);
-            padding: 20px 40px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            border-bottom: 2px solid var(--green);
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #09090b 0%, #000 50%, #0a1a0a 100%);
         }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 300;
-            letter-spacing: 1px;
+
+        .hero canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
         }
-        
-        .logo strong {
-            font-weight: 600;
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 0 20px;
         }
-        
-        nav {
+
+        .hero h1 {
+            font-size: clamp(48px, 12vw, 120px);
+            font-weight: 700;
+            line-height: 0.95;
+            margin-bottom: 24px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+
+        .hero-buttons {
             display: flex;
-            gap: 24px;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
             align-items: center;
-        }
-        
-        nav a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-        
-        nav a:hover {
-            color: var(--cream);
-        }
-        
-        main {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        
-        .intro {
-            background: var(--cream);
-            color: var(--bg-darker);
-            padding: 24px 32px;
-            border-radius: 4px;
-            margin-bottom: 40px;
-        }
-        
-        .intro h2 {
+            gap: 10px;
+            padding: 16px 32px;
+            border-radius: 8px;
             font-size: 16px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: rgba(255,255,255,0.9);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .stats {
+            display: flex;
+            gap: 80px;
+            margin-top: 80px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+        }
+
+        .stat-value sub {
+            font-size: 24px;
+            font-weight: 400;
+            vertical-align: baseline;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+        /* Interactive Playground Section */
+        .playground {
+            background: #fff;
+            color: #000;
+            padding: 100px 40px 450px;
+        }
+
+        .playground h2 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .playground > p {
+            font-size: 18px;
+            color: rgba(0,0,0,0.5);
+            margin-bottom: 60px;
+        }
+
+        .demo-card {
+            background: #09090b;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 32px;
+            max-width: 900px;
+        }
+
+        .demo-card-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 16px;
+        }
+
+        .demo-card h3 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .demo-card p {
+            font-size: 15px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 24px;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .demo-btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .demo-btn-white {
+            background: #fff;
+            color: #000;
+        }
+
+        .demo-btn-white:hover {
+            background: rgba(255,255,255,0.85);
+        }
+
+        .demo-btn-dark {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .demo-btn-dark:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .demo-btn-orange {
+            background: #D67008;
+            color: #fff;
+        }
+
+        .demo-btn-orange:hover {
+            background: #c06007;
+        }
+
+        /* White Cards Grid */
+        .white-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 900px;
+        }
+
+        @media (max-width: 768px) {
+            .white-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .white-card {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .white-card-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(0,0,0,0.4);
+            margin-bottom: 16px;
+        }
+
+        .white-card h3 {
+            font-size: 24px;
             font-weight: 600;
             margin-bottom: 8px;
         }
-        
-        .intro p {
+
+        .white-card p {
             font-size: 14px;
-            line-height: 1.5;
+            color: rgba(0,0,0,0.5);
+            margin-bottom: 20px;
         }
-        
-        .section {
-            background: var(--bg-darker);
-            padding: 24px 32px;
-            border-radius: 4px;
-            margin-bottom: 24px;
-            border-left: 3px solid var(--green);
-        }
-        
-        h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--green);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-        }
-        
-        p {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-        
-        .buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        
-        button {
-            background: var(--green);
-            color: var(--bg-darker);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        button:hover {
-            background: var(--green-light);
-        }
-        
-        button.secondary {
-            background: var(--blue);
-            color: white;
-        }
-        
-        button.secondary:hover {
-            background: #7a9ef5;
-        }
-        
-        button.warning {
-            background: var(--orange);
-            color: white;
-        }
-        
-        button.warning:hover {
-            background: #e07a0a;
-        }
-        
-        input, textarea {
+
+        .white-card input,
+        .white-card textarea {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #556677;
-            border-radius: 4px;
-            background: var(--bg-dark);
-            color: var(--text-light);
+            padding: 14px 16px;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 8px;
             font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
             margin-bottom: 12px;
-            transition: border-color 0.2s;
+            background: #fff;
         }
-        
-        input:focus, textarea:focus {
+
+        .white-card input:focus,
+        .white-card textarea:focus {
             outline: none;
-            border-color: var(--green);
+            border-color: #000;
         }
-        
-        input::placeholder, textarea::placeholder {
-            color: var(--text-muted);
+
+        .white-card input::placeholder,
+        .white-card textarea::placeholder {
+            color: rgba(0,0,0,0.35);
         }
-        
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            font-size: 13px;
-            border-top: 1px solid #556677;
-            margin-top: 40px;
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-        
-        footer a {
-            color: var(--blue);
-            text-decoration: none;
+
+        .submit-btn:hover {
+            background: #222;
         }
-        
-        footer a:hover {
-            text-decoration: underline;
+
+        /* Network buttons */
+        .network-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+            border: none;
+            text-align: left;
         }
-        
-        .tag {
-            display: inline-block;
-            background: var(--bg-dark);
-            color: var(--text-muted);
+
+        .network-btn-dark {
+            background: #09090b;
+            color: #fff;
+        }
+
+        .network-btn-dark:hover {
+            background: #151518;
+        }
+
+        .network-btn-light {
+            background: #fff;
+            color: #000;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .network-btn-light:hover {
+            background: #f5f5f5;
+        }
+
+        .network-method {
             font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 3px;
-            margin-left: 8px;
-            font-weight: normal;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .network-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Dark card (Error Events) */
+        .dark-card {
+            background: #09090b;
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .dark-card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 16px;
+        }
+
+        .dark-card h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .dark-card p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 20px;
+        }
+
+        /* Error buttons */
+        .error-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+            border: none;
+            text-align: left;
+        }
+
+        .error-btn-orange {
+            background: #D67008;
+            color: #fff;
+        }
+
+        .error-btn-orange:hover {
+            background: #c06007;
+        }
+
+        .error-btn-dark {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .error-btn-dark:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .error-type {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: lowercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .error-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        footer {
+            background: #000;
+            color: rgba(255,255,255,0.6);
+            padding: 24px 40px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        footer a {
+            color: #fff;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">Live <strong>Debugger</strong></div>
-        <nav>
-            <a href="https://github.com/kckassette/MemorySpaceFeatures">GitHub</a>
-        </nav>
-    </header>
+    <!-- Hero with M. reveal effect -->
+    <section class="hero">
+        <canvas id="m-canvas"></canvas>
+        <div class="hero-content">
+            <h1>Live<br>Debugger</h1>
+            <p>Every interaction, captured and visualized in real-time. A new way to understand your application's behavior.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="LiveDebugger.toggle()">
+                    <span>>_</span> Open Console
+                </button>
+                <a href="#playground" class="btn btn-secondary">Explore Features</a>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="event-count">0</div>
+                    <div class="stat-label">Events Logged</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0<sub>ms</sub></div>
+                    <div class="stat-label">Latency</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">100<sub>%</sub></div>
+                    <div class="stat-label">Local</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <main>
-        <div class="intro">
-            <h2>How to use this demo</h2>
-            <p>Click the <strong>Debug</strong> button in the header to open the console panel. Then interact with the elements below. Every click, keystroke, and network request is logged in real-time.</p>
+    <!-- Interactive Playground -->
+    <section class="playground" id="playground">
+        <h2>Interactive Playground</h2>
+        <p>Every element below is instrumented. Watch the console light up with activity.</p>
+
+        <!-- Click Events Card - Dark -->
+        <div class="demo-card">
+            <div class="demo-card-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                01 — CLICK EVENTS
+            </div>
+            <h3>Interaction Tracking</h3>
+            <p>Every button press is logged with precise metadata: element type, timestamp, and contextual information.</p>
+            <div class="demo-buttons">
+                <button class="demo-btn demo-btn-white">Primary Action</button>
+                <button class="demo-btn demo-btn-dark">Secondary</button>
+                <button class="demo-btn demo-btn-orange">Warning</button>
+            </div>
         </div>
 
-        <section class="section">
-            <h3>Click Events</h3>
-            <p>Click any button to see it logged with element details.</p>
-            <div class="buttons">
-                <button id="btn-primary">Primary Action</button>
-                <button class="secondary" id="btn-secondary">Secondary</button>
-                <button class="warning" id="btn-warning">Warning</button>
+        <!-- White Cards Grid -->
+        <div class="white-cards-grid">
+            <!-- Input Events -->
+            <div class="white-card">
+                <div class="white-card-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                    02 — INPUT EVENTS
+                </div>
+                <h3>Keystroke Analysis</h3>
+                <p>Real-time input monitoring with field identification.</p>
+                <input type="text" placeholder="Type something..." id="demo-input">
+                <textarea placeholder="Or write a longer message..." rows="2" id="demo-textarea"></textarea>
             </div>
-        </section>
 
-        <section class="section">
-            <h3>Input Events</h3>
-            <p>Type in these fields to see keystroke tracking.</p>
-            <input type="text" placeholder="Start typing here..." id="demo-input">
-            <textarea placeholder="Or write something longer..." rows="3" id="demo-textarea"></textarea>
-        </section>
-
-        <section class="section">
-            <h3>Form Submission</h3>
-            <p>Submit this form to see form events captured.</p>
-            <form id="demo-form">
-                <input type="text" placeholder="Your name" id="name-input" required>
-                <input type="email" placeholder="Your email" id="email-input" required>
-                <button type="submit">Submit Form</button>
-            </form>
-        </section>
-
-        <section class="section">
-            <h3>Network Requests</h3>
-            <p>Trigger fetch requests to see the full request/response cycle.</p>
-            <div class="buttons">
-                <button id="btn-fetch">Fetch API Call</button>
-                <button class="secondary" id="btn-fetch-error">Fetch with Error</button>
+            <!-- Form Events -->
+            <div class="white-card">
+                <div class="white-card-label">03 — FORM EVENTS</div>
+                <h3>Submission Capture</h3>
+                <p>Monitor form submissions with full payload visibility.</p>
+                <form id="demo-form">
+                    <input type="text" placeholder="Your name" name="name">
+                    <input type="email" placeholder="Email address" name="email">
+                    <button type="submit" class="submit-btn">Submit Form</button>
+                </form>
             </div>
-        </section>
 
-        <section class="section">
-            <h3>Error Tracking</h3>
-            <p>Trigger JavaScript errors to see them captured.</p>
-            <div class="buttons">
-                <button class="warning" id="btn-error">Throw Error</button>
-                <button class="warning" id="btn-promise">Promise Rejection</button>
+            <!-- Network Events -->
+            <div class="white-card">
+                <div class="white-card-label">04 — NETWORK EVENTS</div>
+                <h3>Request Lifecycle</h3>
+                <p>Track the complete request/response cycle with timing.</p>
+                <button class="network-btn network-btn-dark" id="btn-fetch">
+                    <span class="network-method">GET</span>
+                    <span class="network-label">Successful API Call</span>
+                </button>
+                <button class="network-btn network-btn-light" id="btn-fetch-error">
+                    <span class="network-method">GET</span>
+                    <span class="network-label">Failed Request (404)</span>
+                </button>
             </div>
-        </section>
-    </main>
+
+            <!-- Error Events - Dark card -->
+            <div class="dark-card">
+                <div class="dark-card-label">05 — ERROR EVENTS</div>
+                <h3>Exception Handling</h3>
+                <p>Capture JavaScript errors with full stack traces.</p>
+                <button class="error-btn error-btn-orange" id="btn-error">
+                    <span class="error-type">try/catch</span>
+                    <span class="error-label">Throw Error</span>
+                </button>
+                <button class="error-btn error-btn-dark" id="btn-promise">
+                    <span class="error-type">Promise</span>
+                    <span class="error-label">Rejection Handler</span>
+                </button>
+            </div>
+        </div>
+    </section>
 
     <footer>
-        <p><strong>Live Debugger</strong> is part of <a href="https://github.com/kckassette/MemorySpaceFeatures">MemorySpace Features</a></p>
-        <p style="margin-top: 8px;">100% local. No external servers. MIT Licensed.</p>
+        <span><strong>Live Debugger</strong> — Part of <a href="https://github.com/kckassette/MemorySpaceFeatures">MemorySpace Features</a></span>
+        <span>100% local · MIT License</span>
     </footer>
 
     <script src="debugger.js"></script>
     <script>
+        // Initialize debugger
         LiveDebugger.init({
             enabled: true,
-            maxEntries: 200,
+            maxEntries: 100,
             persistLogs: false
         });
 
-        document.getElementById('demo-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Form submitted. Check the debug console.');
+        // Update event count in hero
+        const originalAddLog = LiveDebugger.addLog.bind(LiveDebugger);
+        LiveDebugger.addLog = function(type, message, color, details) {
+            originalAddLog(type, message, color, details);
+            document.getElementById('event-count').textContent = LiveDebugger.entries.length;
+        };
+
+        // === M. REVEAL CANVAS EFFECT ===
+        const canvas = document.getElementById('m-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Brand colors
+        const colors = ['#DEFF63', '#8FC22A', '#D67008', '#868DED', '#FF6B6B', '#4ECDC4'];
+        
+        // Reveal circles that follow cursor
+        let revealCircles = [];
+        
+        // Grid of M.'s
+        let grid = [];
+        const tileSize = 90;
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Regenerate grid
+            const cols = Math.ceil(canvas.width / tileSize) + 2;
+            const rows = Math.ceil(canvas.height / tileSize) + 2;
+            
+            grid = [];
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    grid.push({
+                        x: col * tileSize,
+                        y: row * tileSize,
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+            }
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Track mouse
+        document.querySelector('.hero').addEventListener('mousemove', (e) => {
+            revealCircles.push({
+                x: e.clientX,
+                y: e.clientY,
+                radius: 0,
+                alpha: 1
+            });
+            
+            // Limit circles
+            if (revealCircles.length > 40) {
+                revealCircles.shift();
+            }
+        });
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update reveal circles
+            revealCircles = revealCircles.filter(circle => {
+                circle.radius += 4;
+                circle.alpha -= 0.005;
+                return circle.alpha > 0;
+            });
+            
+            // Draw M.'s that are within reveal circles
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 56px Space Grotesk, sans-serif';
+            
+            grid.forEach(tile => {
+                let maxAlpha = 0;
+                
+                revealCircles.forEach(circle => {
+                    const dx = tile.x - circle.x;
+                    const dy = tile.y - circle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < circle.radius) {
+                        const distanceRatio = distance / circle.radius;
+                        const thisAlpha = circle.alpha * (1 - distanceRatio);
+                        maxAlpha = Math.max(maxAlpha, thisAlpha);
+                    }
+                });
+                
+                if (maxAlpha > 0) {
+                    ctx.fillStyle = tile.color;
+                    ctx.globalAlpha = maxAlpha;
+                    ctx.fillText('M.', tile.x, tile.y);
+                }
+            });
+            
+            ctx.globalAlpha = 1;
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+
+        // Demo event handlers
+        document.getElementById('btn-error').addEventListener('click', function() {
+            try {
+                throw new Error('Test error triggered via try/catch');
+            } catch (e) {
+                LiveDebugger.addLog('ERROR', e.message, LiveDebugger.colors.ERROR, {
+                    name: e.name,
+                    stack: e.stack.split('\n').slice(0, 3).join('\n')
+                });
+            }
+        });
+
+        document.getElementById('btn-promise').addEventListener('click', function() {
+            Promise.reject(new Error('Unhandled promise rejection'))
+                .catch(err => {
+                    LiveDebugger.addLog('ERROR', 'Promise rejection: ' + err.message, LiveDebugger.colors.ERROR, {
+                        type: 'PromiseRejection'
+                    });
+                });
         });
 
         document.getElementById('btn-fetch').addEventListener('click', function() {
-            fetch('https://jsonplaceholder.typicode.com/posts/1')
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    console.log('Fetched:', data.title);
-                    alert('Fetch successful. Check debug console.');
+            fetch('https://jsonplaceholder.typicode.com/todos/1')
+                .then(r => r.json())
+                .then(data => {
+                    LiveDebugger.addLog('FETCH', 'API response received: 200 OK', LiveDebugger.colors.INFO, {
+                        status: 200,
+                        data: data
+                    });
                 });
         });
 
         document.getElementById('btn-fetch-error').addEventListener('click', function() {
-            fetch('https://httpstat.us/500')
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Server returned ' + res.status);
-                    return res.json();
-                })
-                .catch(function(err) {
-                    console.error('Fetch error:', err.message);
+            fetch('https://httpstat.us/404')
+                .then(r => {
+                    LiveDebugger.addLog('ERROR', 'API request failed: 404 Not Found', LiveDebugger.colors.ERROR, {
+                        status: 404,
+                        url: 'https://httpstat.us/404'
+                    });
                 });
         });
 
-        document.getElementById('btn-error').addEventListener('click', function() {
-            throw new Error('This is a test error.');
-        });
-
-        document.getElementById('btn-promise').addEventListener('click', function() {
-            Promise.reject(new Error('This promise was rejected.'));
+        document.getElementById('demo-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            LiveDebugger.addLog('FORM', 'Form submission captured', LiveDebugger.colors.FORM, {
+                formData: {
+                    name: e.target.name.value,
+                    email: e.target.email.value
+                },
+                fields: 2,
+                valid: e.target.name.value && e.target.email.value
+            });
+            e.target.reset();
         });
     </script>
 </body>
